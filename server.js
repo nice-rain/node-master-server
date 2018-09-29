@@ -35,6 +35,8 @@ app.use(morgan('common'));
 //Use our json parser (this is required to parse req.body)
 app.use(express.json());
 
+//Global variable for number of ms in a minute
+const MS_PER_MINUTE = 60000;
 
 //=======================================================
 // CORS
@@ -54,8 +56,13 @@ app.use(function(req, res, next) {
 //It will return an array of servers currently active within game.
 app.get('/server', (req,res) => {
 
-    //Right now this returns all servers. We need to query ones with a heartbeat < 5 minutes
-    Servers.find()
+    //Determine the time limit to query for (heartbeat within 5 minutes)
+    
+    const currentTime = Date.now();
+    const timeLimit = new Date(currentTime - 5 * MS_PER_MINUTE);
+
+    //Only returns servers with a heartbeat in the last 5 minutes
+    Servers.find({updated: {$gte: timeLimit}})
     .then(servers => {
         //Map all found servers to an array after we serialize them
         res.json(servers.map(server=> server.serialize()));
