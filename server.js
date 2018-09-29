@@ -34,7 +34,7 @@ app.use(express.json());
 
 
 //=======================================================
-// GET Endpoint
+// GET Endpoint - Return Server List
 //=======================================================
 
 //This endpoint is used to retrieve the entire server list from the database.
@@ -56,13 +56,57 @@ app.get('/server', (req,res) => {
 });
 
 //=======================================================
-// Heartbeat Endpoint
+// Heartbeat Endpoint - Allow Server to Remain Listed
 //=======================================================
 
 //GET /:id/:port will allow us to refresh the server heartbeat. We will return a success status once we refresh.
 //On a failed status, the game will know that it needs to send a POST to register with the master server.
 
-//POST endpoint - Register a server with the master server. It will error if the server is already registered.
+//=======================================================
+// POST Endpoint - Register a new server
+//=======================================================
+
+//This requires a body containing a server name and port. We will retrieve the IP from the request and set the date ourselves.//#endregion
+
+app.post('/server', (req, res)=>
+{
+ //Required body keys
+  const requiredFields = ['serverName', 'serverPort'];
+
+  //Loop through our keys and make sure they are in our body
+  for(let i = 0; i < requiredFields.length; i++)
+  {
+    if(!(requiredFields[i] in req.body))
+    {
+      const message = `Missing \`${requiredFields[i]}\` in request body`;
+      console.error(`\n\nError: ${message}`);
+      return res.status(400).send(message);
+    }
+  }
+
+  //If we've made it here, we have all our required fields - create a new database entry
+  const newServer = {
+    serverName: req.body.serverName,
+    serverIP: req.ip,
+    serverPort: req.body.serverPort,
+    updated: Date.now() //Server sets the time
+  };
+
+  Servers.create(newServer)
+  .then(newServer => {
+    //We will return status 201, the server ID, and original params sent
+    res.status(201).json(newServer.serialize());
+  })
+  .catch(err =>
+  {
+    console.log(`\n\nError: ${err}`);
+    res.status(500).json({error: 'internal server error'});
+  });
+});
+
+
+
+
 
 //PUT /:id/:port endpoint - Allows us to change server name, port, or number of players
 

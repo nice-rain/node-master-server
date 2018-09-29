@@ -8,7 +8,7 @@ mongoose.Promise = global.Promise;
 const serverSchema = mongoose.Schema({
     serverName: {type: String, required: true}, //Name of the server hosted
     serverIP: {type: String, required: true}, //This is not an efficient way to store IP addresses. We will need to clear cached severs frequently.
-    serverPORT: {type: Number, required: true}, //We need a port to connect to (especially with proxies)
+    serverPort: {type: Number, required: true}, //We need a port to connect to (especially with proxies)
     updated: {type: Date, default: Date.now} //Time to query for heartbeat
   });
 
@@ -19,7 +19,7 @@ serverSchema.methods.serialize = function() {
       id: this._id,
       serverName: this.serverName,
       serverIP: this.serverIP,
-      serverPORT: this.serverPORT,
+      serverPort: this.serverPort,
       updated: this.updated
     };
   };
