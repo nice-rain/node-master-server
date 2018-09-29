@@ -34,16 +34,33 @@ app.use(express.json());
 
 
 //=======================================================
-// Endpoints
+// GET Endpoint
 //=======================================================
 
-//GET endpoint - This endpoint will return entire list of all servers that have given a heartbeat within the past 5 minutes.
+//This endpoint is used to retrieve the entire server list from the database.
+//It will return an array of servers currently active within game.
+app.get('/server', (req,res) => {
 
-app.get('/server', (req,res)=>{
+    //Right now this returns all servers. We need to query ones with a heartbeat < 5 minutes
+    Servers.find()
+    .then(servers => {
+        //Map all found servers to an array after we serialize them
+        res.json(servers.map(server=> server.serialize()));
+    })
+    .catch(err =>{
+      console.log(`\n\nError: ${err}`);
 
+      //Can't connect to the database or other failure
+      res.status(500).json({error:"Internal Server Error"});
+    })
 });
 
-//GET /:id/:port endpoint - This endpoint will be called to refresh heartbeat on server. Will error if server is not registered (need to send a post request if we receive an error.)
+//=======================================================
+// Heartbeat Endpoint
+//=======================================================
+
+//GET /:id/:port will allow us to refresh the server heartbeat. We will return a success status once we refresh.
+//On a failed status, the game will know that it needs to send a POST to register with the master server.
 
 //POST endpoint - Register a server with the master server. It will error if the server is already registered.
 
@@ -65,12 +82,12 @@ let server;
 //Start our server
 function runServer(databaseUrl, port = PORT) {
     return new Promise((resolve, reject) => {
-      mongoose.connect(databaseUrl, err => {
+      mongoose.connect(databaseUrl, {useNewUrlParser:true}, err => {
         if (err) {
           return reject(err);
         }
         server = app.listen(port, () => {
-          console.log(`Your app is listening on port ${port}`);
+          console.log(`Master server is listening on port ${port}`);
           resolve();
         })
           .on('error', err => {
@@ -85,7 +102,7 @@ function runServer(databaseUrl, port = PORT) {
 function closeServer() {
     return mongoose.disconnect().then(() => {
       return new Promise((resolve, reject) => {
-        console.log('Closing server');
+        console.log('Closing master server');
         server.close(err => {
           if (err) {
             return reject(err);
@@ -101,7 +118,6 @@ function closeServer() {
 if (require.main === module) {
     runServer(DATABASE_URL).catch(err => console.error(err));
 }
-
 
 //Export our modules for testing
 module.exports = { app, runServer, closeServer };
