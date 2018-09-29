@@ -105,7 +105,7 @@ app.post('/server', (req, res)=>
   Servers.create(newServer)
   .then(newServer => {
     //We will return status 201, the server ID, and original params sent
-    res.status(201).json(newServer.serialize());
+    res.status(201).json(newServer.serialize(true));
   })
   .catch(err =>
   {

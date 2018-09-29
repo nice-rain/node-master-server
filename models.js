@@ -13,15 +13,26 @@ const serverSchema = mongoose.Schema({
   });
 
 
-//Function used to return all stored server variables
-serverSchema.methods.serialize = function() {
-    return {
-      id: this._id,
-      serverName: this.serverName,
-      serverIP: this.serverIP,
-      serverPort: this.serverPort,
-      updated: this.updated
+// Function used to return all stored server variables
+// Note: We use bShowID to prevent sending IDs to our entire GET request
+serverSchema.methods.serialize = function(bShowID = false) {
+    
+    //Our default return
+    const returnObject = {
+        serverName: this.serverName,
+        serverIP: this.serverIP,
+        serverPort: this.serverPort,
+        updated: this.updated
     };
+    
+    //If we are returning an ID, append it to the object
+    if(bShowID)
+    {
+        returnObject.id = this._id;
+    }
+    
+    //Return our built object
+     return returnObject;
   };
   
 
