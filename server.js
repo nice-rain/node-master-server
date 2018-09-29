@@ -161,7 +161,7 @@ app.post('/server', (req, res)=>
 
 
 //=======================================================
-// PUT Endpoint
+// PUT Endpoint - Modify server fields
 //=======================================================
 
 //PUT /:id/:port endpoint - Allows us to change server name, or number of players
@@ -227,7 +227,57 @@ app.put('/server/:id/:port', (req, res) =>
 
 });
 
-//DELETE /:id/:port endpoint - Called when we shutdown server normally. Will automatically remove it from the master server database.
+//=======================================================
+// DELETE Endpoint - Called when server is closed
+//=======================================================
+
+// Called when we shutdown server normally. Will automatically remove it from the master server database.
+// We will validate server IP and port as well for security.
+app.delete('/server/:id/:port', (req, res) =>
+{
+
+   //validate our IP address and Port 
+   Servers.findById(req.params.id)
+   .then(server =>{
+     
+     //Validate our port matches
+     let port = parseInt(req.params.port);
+     if(server.serverPort !== port)
+     {
+       const message = `Request Port: ${req.params.port} does not match server port.`;
+       console.log(message);
+       res.status(400).send(message);
+     }
+ 
+     //Validate that our server IP matches
+     else if(server.serverIP !== req.ip)
+     {
+       const message = `Request IP: ${req.ip} does not match stored IP.`;
+       console.log(message);
+       res.status(400).send(message);
+     }
+ 
+     //Both port and IP match
+     else
+     {
+        //Remove ID from database
+        Servers.deleteOne({_id: req.params.id})
+        .then(()=>{
+          //notify that our deletion was successful
+          console.log(`Deleted server with id \`${req.params.id}\``);
+          res.status(204).end();
+        })
+        .catch(err =>{
+          res.status(500).json({error: "Internal Server Error."});
+        });
+     }
+   })
+   //Error finding ID
+   .catch(err =>{
+     res.status(500).json({error: "Server may not exist. POST to register server."});
+   });
+
+});
 
 
 
