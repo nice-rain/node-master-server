@@ -155,6 +155,8 @@ app.post('/server', (req, res)=>
       console.log("server exists");
 
       //Basically the same as a PUT here, update all fields
+      //Note: We could throw an error here to notify the server to try a PUT request.
+      //I felt this was easier for the sake of use and server calls
       const updated = {};
       //We can update this to allow fields such as playerCount
       const updateableFields = ['serverName'];
