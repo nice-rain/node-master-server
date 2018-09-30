@@ -13,8 +13,8 @@ function buildTableRows(res)
     for(let i = 0; i < res.length; i++)
     {
         //Add each row to our stored rows
-        rows += `<td>${res[i].serverName}</td> 
-        <td>${res[i].serverIP}:${res[i].serverPort}</td>`;
+        rows += `<tr><td>${res[i].serverName}</td> 
+        <td>IP ${res[i].serverIP}:${res[i].serverPort}</td></tr>`;
     }
 
     updateTable(rows);
@@ -24,7 +24,7 @@ function buildTableRows(res)
 //Function updates our table with headings and generated rows
 function updateTable(rows)
 {
-    let headings = `<tr><th>Server Name</th><th>IP Address</th></tr>`
+    let headings = `<tr><th>Server Name</th><th>Address</th></tr>`
 
     $('.js-server-list').html(headings + rows);
 }

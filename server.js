@@ -146,24 +146,64 @@ app.post('/server', (req, res)=>
     }
   }
 
-  //If we've made it here, we have all our required fields - create a new database entry
-  const newServer = {
-    serverName: req.body.serverName,
-    serverIP: req.ip,
-    serverPort: req.body.serverPort,
-    updated: Date.now() //Server sets the time
-  };
+  //Before we create a new server, check to see if we already have one with the same IP/Port
+  Servers.countDocuments({serverIP: req.ip, serverPort: req.body.serverPort}, (err, count) =>
+  { 
+    //Check to see if we found any indices
+    if(count>0){
+      
+      console.log("server exists");
 
-  Servers.create(newServer)
-  .then(newServer => {
-    //We will return status 201, the server ID, and original params sent
-    res.status(201).json(newServer.serialize(true));
+      //Basically the same as a PUT here, update all fields
+      const updated = {};
+      //We can update this to allow fields such as playerCount
+      const updateableFields = ['serverName'];
+      updateableFields.forEach(field => {
+        if (field in req.body) {
+          updated[field] = req.body[field];
+        }
+      });
+      
+      //Update our server's fields
+      Servers.findOneAndUpdate({serverIP: req.ip, serverPort: req.body.serverPort}, { $set: updated }, { new: true })
+        .then((updatedServer) => {
+          console.log("POST request updated existing server.");
+          res.status(200).json(updatedServer.serialize(true));
+        })
+        .catch(err => {
+          res.status(500).json({ message: 'Internal Sever Error when updating' });
+        });
+    }
+
+    //IP address doesn't exist, go ahead and create a new entry in the database.
+    else{
+      //Declare a new server
+      const newServer = {
+        serverName: req.body.serverName,
+        serverIP: req.ip,
+        serverPort: req.body.serverPort,
+        updated: Date.now() //Server sets the time
+      };
+
+      Servers.create(newServer)
+      .then(newServer => {
+        //We will return status 201, the server ID, and original params sent
+        res.status(201).json(newServer.serialize(true));
+      })
+      .catch(err =>
+      {
+        //Error if we have trouble calling Create
+        console.log(`\n\nError: ${err}`);
+        res.status(500).json({error: 'internal server error'});
+      });
+    }
   })
+  //Error handling for countDocuments
   .catch(err =>
-  {
-    console.log(`\n\nError: ${err}`);
-    res.status(500).json({error: 'internal server error'});
-  });
+    {
+      console.log(`\n\nError: ${err}`);
+        res.status(500).json({error: 'internal server error'});
+    });  
 });
 
 
