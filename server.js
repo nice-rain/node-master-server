@@ -38,6 +38,32 @@ app.use(express.json());
 //Global variable for number of ms in a minute
 const MS_PER_MINUTE = 60000;
 
+//Global for number of ms in a day 
+const MS_PER_DAY = 86400000;
+
+//=======================================================
+// Automatically Clear Database
+//=======================================================
+
+//This function runs on an interval. It will remove all dead servers older than 24 hours.
+function clearDeadServers()
+{
+  //Determine the time limit to query for (heartbeat within 5 minutes)
+  const currentTime = Date.now();
+  const timeLimit = new Date(currentTime - MS_PER_DAY);
+
+  //Only returns servers with a heartbeat in the last 5 minutes
+  Servers.deleteMany({updated: {$lte: timeLimit}})
+  .then(()=>{
+    //notify that our deletion was successful
+    console.log(`Deleted all servers that haven't had a heartbeat in 24 hours.`);
+    
+  })
+  .catch(err =>{
+    console.log(`Error Deleting Cache`);
+  });
+}
+
 //=======================================================
 // CORS
 //=======================================================
@@ -348,6 +374,10 @@ function runServer(databaseUrl, port = PORT) {
         }
         server = app.listen(port, () => {
           console.log(`Master server is listening on port ${port}`);
+
+          //Set our interval for clearing servers without a heartbeat every 24 hours (runs once per day).
+          setInterval(clearDeadServers, MS_PER_DAY);
+
           resolve();
         })
           .on('error', err => {
@@ -380,4 +410,4 @@ if (require.main === module) {
 }
 
 //Export our modules for testing
-module.exports = { app, runServer, closeServer };
+module.exports = { app, runServer, closeServer, clearDeadServers };
