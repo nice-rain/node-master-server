@@ -4,7 +4,9 @@
         <title>Master Server</title>
         <meta name="description" content="Example master server for an online game.">
         <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.css">
+        <link href="https://fonts.googleapis.com/css?family=Bai+Jamjuree" rel="stylesheet">
         <link rel="stylesheet" href="style.css">
     </head>
     <body>
@@ -12,13 +14,18 @@
             <h1>Example Master Server</h1>
         </header>
         <main role="main">
-            <p>This is an example master server. This list will be updated every time you refresh the page with information regarding the servers that are currently sending a heartbeat. Any server that doesn't send a heartbeat within a 5-minute interval will be automatically cleared from this list.</p>
+            <div class="container">
+                <section role="region">
+                    <p>This is an example master server. This list will be updated every time you refresh the page with information regarding the servers that are currently sending a heartbeat. Any server that doesn't send a heartbeat within a 5-minute interval will be automatically cleared from this list.</p>
+                </section>
+                <hr>
+                <!-- Table of servers generated -->
+                <section role="region">
+                    <table class="js-server-list">
 
-            <section role="region">
-                <table class="js-server-list">
-
-                </table>
-            </section>
+                    </table>
+                </section>
+            </div>
         </main>
 
         <!-- JQuery and Client Scripts -->

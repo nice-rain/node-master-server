@@ -1,0 +1,49 @@
+*{
+    box-sizing:border-box;
+}
+
+header{
+    /* background-color:#000; */
+    border-bottom:1px solid rgb(132, 0, 255);
+}
+
+body{
+    /* background-color:#222; */
+    font-family: 'Bai Jamjuree', sans-serif;
+}
+
+h1{
+    text-align: center;
+    margin:0;
+    color:#222;
+    padding-top:10px;
+    padding-bottom:10px;
+}
+
+
+.container{
+    margin-left:auto;
+    margin-right:auto;
+    max-width:1000px;
+    border-radius: 3px;
+    padding:10px;
+    color:#222;
+}
+
+table{
+    border:1px solid #111;
+    padding:0;
+    margin:0 auto;
+    background-color:#111;
+}
+
+th{
+    color:#eee;
+    background-color:#111;
+}
+
+td{
+    border: 1px solid black;
+    width:250px;
+    background-color:#eee;
+}
