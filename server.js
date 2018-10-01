@@ -198,6 +198,9 @@ app.post('/server', (req, res)=>
           updated[field] = req.body[field];
         }
       });
+
+      //Update our heartbeat
+      updated.updated = Date.now();
       
       //Update our server's fields
       Servers.findOneAndUpdate({serverIP: ip, serverPort: req.body.serverPort}, { $set: updated }, { new: true })
@@ -295,6 +298,9 @@ app.put('/server/:id/:port', (req, res) =>
           updated[field] = req.body[field];
         }
       });
+
+      //Update our heartbeat
+      updated.updated = Date.now();
       
       //Update our server's fields
       Servers.findByIdAndUpdate(req.params.id, { $set: updated }, { new: true })
