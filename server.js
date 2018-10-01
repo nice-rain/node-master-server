@@ -114,17 +114,20 @@ app.get('/server/:id/:port', (req,res) =>
     
     //Validate our port matches
     let port = parseInt(req.params.port);
+
+    //Store our IP
+    const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+
     if(server.serverPort !== port)
     {
       const message = `Request Port: ${req.params.port} does not match server port.`;
       console.log(message);
       res.status(400).send(message);
     }
-
     //Validate that our server IP matches
-    else if(server.serverIP !== req.ip)
+    else if(server.serverIP !== ip)
     {
-      const message = `Request IP: ${req.ip} does not match stored IP.`;
+      const message = `Request IP: ${ip} does not match stored IP.`;
       console.log(message);
       res.status(400).send(message);
     }
@@ -172,8 +175,12 @@ app.post('/server', (req, res)=>
     }
   }
 
+  //store our IP
+  let ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+
+
   //Before we create a new server, check to see if we already have one with the same IP/Port
-  Servers.countDocuments({serverIP: req.ip, serverPort: req.body.serverPort}, (err, count) =>
+  Servers.countDocuments({serverIP: ip, serverPort: req.body.serverPort}, (err, count) =>
   { 
     //Check to see if we found any indices
     if(count>0){
@@ -193,7 +200,7 @@ app.post('/server', (req, res)=>
       });
       
       //Update our server's fields
-      Servers.findOneAndUpdate({serverIP: req.ip, serverPort: req.body.serverPort}, { $set: updated }, { new: true })
+      Servers.findOneAndUpdate({serverIP: ip, serverPort: req.body.serverPort}, { $set: updated }, { new: true })
         .then((updatedServer) => {
           console.log("POST request updated existing server.");
           res.status(200).json(updatedServer.serialize(true));
@@ -208,7 +215,7 @@ app.post('/server', (req, res)=>
       //Declare a new server
       const newServer = {
         serverName: req.body.serverName,
-        serverIP: req.ip,
+        serverIP: ip,
         serverPort: req.body.serverPort,
         updated: Date.now() //Server sets the time
       };
@@ -242,6 +249,10 @@ app.post('/server', (req, res)=>
 //PUT /:id/:port endpoint - Allows us to change server name, or number of players
 app.put('/server/:id/:port', (req, res) =>
 {
+  //store our IP
+  let ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+
+
   //validate our IP address and Port 
   Servers.findById(req.params.id)
   .then(server =>{
@@ -256,9 +267,9 @@ app.put('/server/:id/:port', (req, res) =>
     }
 
     //Validate that our server IP matches
-    else if(server.serverIP !== req.ip)
+    else if(server.serverIP !== ip)
     {
-      const message = `Request IP: ${req.ip} does not match stored IP.`;
+      const message = `Request IP: ${ip} does not match stored IP.`;
       console.log(message);
       res.status(400).send(message);
     }
@@ -266,7 +277,7 @@ app.put('/server/:id/:port', (req, res) =>
     //Validate our ID in our body matches the ID in the parameter
     else if(!(req.params.id && req.body.id && req.params.id === req.body.id)) 
     {
-      const message = `Request Path ID: ${req.ip} and request body ID must match.`;
+      const message = `Request Path ID: ${ip} and request body ID must match.`;
       console.log(message);
       res.status(400).send(message);
     }
@@ -310,6 +321,8 @@ app.put('/server/:id/:port', (req, res) =>
 // We will validate server IP and port as well for security.
 app.delete('/server/:id/:port', (req, res) =>
 {
+  //store our IP
+  let ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
 
    //validate our IP address and Port 
    Servers.findById(req.params.id)
@@ -325,9 +338,9 @@ app.delete('/server/:id/:port', (req, res) =>
      }
  
      //Validate that our server IP matches
-     else if(server.serverIP !== req.ip)
+     else if(server.serverIP !== ip)
      {
-       const message = `Request IP: ${req.ip} does not match stored IP.`;
+       const message = `Request IP: ${ip} does not match stored IP.`;
        console.log(message);
        res.status(400).send(message);
      }
